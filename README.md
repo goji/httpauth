@@ -1,14 +1,15 @@
 # goji/httpauth
 
-httpauth currently provides [HTTP Basic Authentication middleware for](http://tools.ietf.org/html/rfc2617) for Go.
+httpauth currently provides [HTTP Basic Authentication middleware for](http://tools.ietf.org/html/rfc2617) for Go. 
 
-Note that httpauth is completely compatible with [Goji](https://goji.io/), a mimimal web framework for Go, but as it satisfies http.Handler it can be used beyond Goji itself. The examples below will focus on Goji for its ease-of-use.
-
+Note that httpauth is completely compatible with [Goji](https://goji.io/), a mimimal web framework for Go, but as it satisfies http.Handler it can be used beyond Goji itself. 
 ## Example
 
 httpauth provides a `SimpleBasicAuth` function to get you up and running. Particularly ideal for development servers.
 
 Note that HTTP Basic Authentication credentials are sent over the wire "in the clear" (read: plaintext!) and therefore should not be considered a robust way to secure a HTTP server. If you're after that, you'll need to use SSL/TLS ("HTTPS") at a minimum.
+
+### Goji
 
 ```go
 
@@ -37,7 +38,6 @@ If you're looking for a little more control over the process, you can instead pa
 
 * Configure the authentication realm
 * Provide your own UnauthorizedHandler (anything that satisfies `http.Handler`) so you can return a better looking 401 page.
-* Pass in a custom Validation function that takes the username and password strings and returns a bool, in the event you want to handle specific cases/users.
 
 ```go
 
@@ -55,9 +55,26 @@ func main() {
 
     goji.Serve()
 }
+```
 
+### net/http
+
+If you're using vanilla net/http or another http.Handler compatible framework:
+
+```go
+package main
+
+import(
+	"net/http"
+	"github.com/goji/httpauth"
+)
+
+func main() {
+	http.Handle("/", httpauth.SimpleBasicAuth("dave", "somepassword")(http.HandlerFunc(hello)))
+	http.ListenAndServe(":7000", nil)
+}
 ```
 
 ## Contributing
 
-Send a pull request!
+Send a pull request! Note that features on the (informal) roadmap include HTTP Digest Auth and the potential for supplying your own user/password comparison function.

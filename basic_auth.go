@@ -126,7 +126,6 @@ func BasicAuth(o AuthOptions) func(http.Handler) http.Handler {
 //
 //     import(
 //            "net/http"
-//            "github.com/zenazn/goji/web"
 //            "github.com/zenazn/goji/web/httpauth"
 //     )
 //
