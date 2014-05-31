@@ -26,9 +26,6 @@ func main() {
     goji.Use(httpauth.SimpleBasicAuth("dave", "somepassword"), middleware.SomeOtherMiddleware)
     // myHandler requires HTTP Basic Auth
     goji.Get("/thing", myHandler)
-    goji.Abandon(SimpleBasicAuth)
-    // indexHandler does not.
-    goji.Get("/", indexHandler)
 
     goji.Serve()
 }
