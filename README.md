@@ -1,4 +1,4 @@
-# goji/httpauth
+# goji/httpauth [![GoDoc](https://godoc.org/github.com/goji/httpauth?status.png)](https://godoc.org/github.com/goji/httpauth)
 
 httpauth currently provides [HTTP Basic Authentication middleware for](http://tools.ietf.org/html/rfc2617) for Go. 
 
