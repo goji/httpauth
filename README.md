@@ -1,6 +1,8 @@
 # goji/httpauth
 
-httpauth currently provides [HTTP Basic Authentication middleware for](http://tools.ietf.org/html/rfc2617) for [Goji](https://goji.io/), a mimimal web framework for Go.
+httpauth currently provides [HTTP Basic Authentication middleware for](http://tools.ietf.org/html/rfc2617) for Go.
+
+Note that httpauth is completely compatible with [Goji](https://goji.io/), a mimimal web framework for Go, but as it satisfies http.Handler it can be used beyond Goji itself. The examples below will focus on Goji for its ease-of-use.
 
 ## Example
 
@@ -53,6 +55,7 @@ func main() {
 
     goji.Serve()
 }
+
 ```
 
 ## Contributing

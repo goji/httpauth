@@ -1,4 +1,4 @@
-package middleware
+package httpauth
 
 import (
 	"encoding/base64"
@@ -21,8 +21,6 @@ type AuthOptions struct {
 	User                string
 	Password            string
 	UnauthorizedHandler http.Handler
-	// Advanced users can supply a custom user:password comparison function
-	Validate func(string, string) bool
 }
 
 // Satisfies the http.Handler interface for basicAuth.
@@ -30,12 +28,6 @@ func (b basicAuth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Check if we have a user-provided error handler, else set a default
 	if b.opts.UnauthorizedHandler == nil {
 		b.opts.UnauthorizedHandler = http.HandlerFunc(defaultUnauthorizedHandler)
-		return
-	}
-
-	// Set a default user/password validation function
-	if b.opts.Validate == nil {
-		b.opts.Validate = b.validate
 	}
 
 	// Check that the provided details match
@@ -48,10 +40,9 @@ func (b basicAuth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	b.h.ServeHTTP(w, r)
 }
 
-// authenticate validates the user:password combination provided in the request header.
-// Returns 'false' if the user has not successfully authenticated.
+// authenticate retrieves and then validates the user:password combination provided in
+// the request header. Returns 'false' if the user has not successfully authenticated.
 func (b *basicAuth) authenticate(r *http.Request) bool {
-
 	const basicScheme string = "Basic "
 
 	// Confirm the request is sending Basic Authentication credentials.
@@ -61,7 +52,7 @@ func (b *basicAuth) authenticate(r *http.Request) bool {
 	}
 
 	// Get the plain-text username and password from the request
-	// The first six characters are skipped e.g. "Basic ".
+	// The first six characters are skipped - e.g. "Basic ".
 	str, err := base64.StdEncoding.DecodeString(auth[len(basicScheme):])
 	if err != nil {
 		return false
@@ -71,17 +62,9 @@ func (b *basicAuth) authenticate(r *http.Request) bool {
 	// of the password. Note that the RFC2617 standard does not place any limitations on
 	// allowable characters in the password.
 	creds := strings.SplitN(string(str), ":", 2)
-	// Validate the user & password match.
-	if b.validate(creds[0], creds[1]) == true {
-		return true
-	}
 
-	return false
-}
-
-// Validate that the provided user & password match.
-func (b *basicAuth) validate(user string, password string) bool {
-	if user == b.opts.User && password == b.opts.Password {
+	// Compare the supplied credentials to those set in our options
+	if creds[0] == b.opts.User && creds[1] == b.opts.Password {
 		return true
 	}
 
@@ -109,18 +92,18 @@ func defaultUnauthorizedHandler(w http.ResponseWriter, r *http.Request) {
 //
 //     import(
 //            "net/http"
-//            "github.com/zenazn/goji/web"
-//            "github.com/zenazn/goji/web/middleware"
+//            "github.com/zenazn/goji"
+//            "github.com/zenazn/goji/web/httpauth"
 //     )
 //
 //     func main() {
-//          basicOpts := &middleware.AuthOptions{
+//          basicOpts := httpauth.AuthOptions{
 //                      Realm: "Restricted",
 //                      User: "Dave",
 //                      Password: "ClearText",
 //                  }
 //
-//          goji.Use(middleware.BasicAuth(basicOpts), middleware.SomeOtherMiddleware)
+//          goji.Use(httpauth.BasicAuth(basicOpts), SomeOtherMiddleware)
 //          goji.Get("/thing", myHandler)
 //  }
 //
@@ -144,12 +127,12 @@ func BasicAuth(o AuthOptions) func(http.Handler) http.Handler {
 //     import(
 //            "net/http"
 //            "github.com/zenazn/goji/web"
-//            "github.com/zenazn/goji/web/middleware"
+//            "github.com/zenazn/goji/web/httpauth"
 //     )
 //
 //     func main() {
 //
-//          goji.Use(httpauth.SimpleBasicAuth("dave", "somepassword"), middleware.SomeOtherMiddleware)
+//          goji.Use(httpauth.SimpleBasicAuth("dave", "somepassword"), SomeOtherMiddleware)
 //          goji.Get("/thing", myHandler)
 //      }
 //

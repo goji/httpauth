@@ -1,4 +1,4 @@
-package middleware
+package httpauth
 
 import (
 	"encoding/base64"
