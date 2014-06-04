@@ -63,6 +63,10 @@ func (b *basicAuth) authenticate(r *http.Request) bool {
 	// allowable characters in the password.
 	creds := strings.SplitN(string(str), ":", 2)
 
+	if len(creds) != 2 {
+		return false
+	}
+
 	// Compare the supplied credentials to those set in our options
 	if creds[0] == b.opts.User && creds[1] == b.opts.Password {
 		return true
