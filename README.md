@@ -17,13 +17,15 @@ package main
 
 import(
     "net/http"
+
     "github.com/zenazn/goji/web"
     "github.com/zenazn/goji/web/middleware"
 )
 
 func main() {
 
-    goji.Use(httpauth.SimpleBasicAuth("dave", "somepassword"), middleware.SomeOtherMiddleware)
+    goji.Use(httpauth.SimpleBasicAuth("dave", "somepassword"))
+    goji.Use(SomeOtherMiddleware)
     // myHandler requires HTTP Basic Auth
     goji.Get("/thing", myHandler)
 
@@ -47,10 +49,40 @@ func main() {
         UnauthorizedHandler: myUnauthorizedHandler,
     }
 
-    goji.Use(BasicAuth(authOpts), myOtherMiddleware)
+    goji.Use(BasicAuth(authOpts))
+    goji.Use(SomeOtherMiddleware)
     goji.Get("/thing", myHandler)
 
     goji.Serve()
+}
+```
+
+### gorilla/mux
+
+Since it's all `http.Handler`, httpauth works with gorilla/mux (and most other routers) as well:
+
+```go
+package main
+
+import (
+	"net/http"
+
+	"github.com/goji/httpauth"
+	"github.com/gorilla/mux"
+)
+
+func main() {
+	r := mux.NewRouter()
+
+	r.HandleFunc("/", myHandler)
+	http.Handle("/", httpauth.SimpleBasicAuth("dave", "somepassword")(r))
+
+	http.ListenAndServe(":7000", nil)
+}
+
+func myHandler(w http.ResponseWriter, r *http.Request) {
+
+	w.Write([]byte("hello"))
 }
 ```
 
@@ -63,6 +95,7 @@ package main
 
 import(
 	"net/http"
+
 	"github.com/goji/httpauth"
 )
 
