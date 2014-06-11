@@ -88,7 +88,7 @@ func myHandler(w http.ResponseWriter, r *http.Request) {
 
 ### net/http
 
-If you're using vanilla net/http or another http.Handler compatible framework:
+If you're using vanilla net/http:
 
 ```go
 package main
