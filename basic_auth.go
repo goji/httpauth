@@ -88,7 +88,7 @@ func (b *basicAuth) authenticate(r *http.Request) bool {
 
 // Require authentication, and serve our error handler otherwise.
 func (b *basicAuth) requestAuth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%q"`, b.opts.Realm))
+	w.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, b.opts.Realm))
 	b.opts.UnauthorizedHandler.ServeHTTP(w, r)
 }
 
