@@ -1,6 +1,6 @@
 # goji/httpauth [![GoDoc](https://godoc.org/github.com/goji/httpauth?status.png)](https://godoc.org/github.com/goji/httpauth) [![Build Status](https://travis-ci.org/goji/httpauth.svg)](https://travis-ci.org/goji/httpauth)
 
-httpauth currently provides [HTTP Basic Authentication middleware for](http://tools.ietf.org/html/rfc2617) for Go. 
+httpauth currently provides [HTTP Basic Authentication middleware](http://tools.ietf.org/html/rfc2617) for Go. 
 
 Note that httpauth is completely compatible with [Goji](https://goji.io/), a minimal web framework for Go, but as it satisfies http.Handler it can be used beyond Goji itself. 
 ## Example
