@@ -66,16 +66,16 @@ func (b *basicAuth) authenticate(r *http.Request) bool {
 	// allowable characters in the password.
 	creds := bytes.SplitN(str, []byte(":"), 2)
 
+	if len(creds) != 2 {
+		return false
+	}
+
 	// Equalize lengths of supplied and required credentials
 	// by hashing them
 	givenUser := sha256.Sum256(creds[0])
 	givenPass := sha256.Sum256(creds[1])
 	requiredUser := sha256.Sum256([]byte(b.opts.User))
 	requiredPass := sha256.Sum256([]byte(b.opts.Password))
-
-	if len(creds) != 2 {
-		return false
-	}
 
 	// Compare the supplied credentials to those set in our options
 	if subtle.ConstantTimeCompare(givenUser[:], requiredUser[:]) == 1 &&
