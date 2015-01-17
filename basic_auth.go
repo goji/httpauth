@@ -21,8 +21,7 @@ type basicAuth struct {
 // default error handler if you wish to serve a custom template/response.
 type AuthOptions struct {
 	Realm               string
-	User                string
-	Password            string
+	AuthFunc            func(string, string) bool
 	UnauthorizedHandler http.Handler
 }
 
@@ -70,20 +69,10 @@ func (b *basicAuth) authenticate(r *http.Request) bool {
 		return false
 	}
 
-	// Equalize lengths of supplied and required credentials
-	// by hashing them
-	givenUser := sha256.Sum256(creds[0])
-	givenPass := sha256.Sum256(creds[1])
-	requiredUser := sha256.Sum256([]byte(b.opts.User))
-	requiredPass := sha256.Sum256([]byte(b.opts.Password))
+	givenUser := string(creds[0])
+	givenPass := string(creds[1])
 
-	// Compare the supplied credentials to those set in our options
-	if subtle.ConstantTimeCompare(givenUser[:], requiredUser[:]) == 1 &&
-		subtle.ConstantTimeCompare(givenPass[:], requiredPass[:]) == 1 {
-		return true
-	}
-
-	return false
+	return b.opts.AuthFunc(givenUser, givenPass)
 }
 
 // Require authentication, and serve our error handler otherwise.
@@ -141,7 +130,7 @@ func BasicAuth(o AuthOptions) func(http.Handler) http.Handler {
 //
 //     import(
 //            "net/http"
-//            "github.com/zenazn/goji/web/httpauth"
+//            "github.com/goji/httpauth"
 //     )
 //
 //     func main() {
@@ -151,10 +140,27 @@ func BasicAuth(o AuthOptions) func(http.Handler) http.Handler {
 //      }
 //
 func SimpleBasicAuth(user, password string) func(http.Handler) http.Handler {
-	opts := AuthOptions{
-		Realm:    "Restricted",
-		User:     user,
-		Password: password,
+	fn := func(u, p string) bool {
+		requiredUser := sha256.Sum256([]byte(user))
+		requiredPass := sha256.Sum256([]byte(password))
+
+		// Equalize lengths of supplied and required credentials
+		// by hashing them
+		givenUser := sha256.Sum256([]byte(u))
+		givenPass := sha256.Sum256([]byte(p))
+
+		// Compare the supplied credentials to those set in our options
+		if subtle.ConstantTimeCompare(givenUser[:], requiredUser[:]) == 1 &&
+			subtle.ConstantTimeCompare(givenPass[:], requiredPass[:]) == 1 {
+			return true
+		}
+		return false
 	}
+
+	opts := AuthOptions{
+		Realm: "Restricted",
+		AuthFunc: fn,
+	}
+
 	return BasicAuth(opts)
 }

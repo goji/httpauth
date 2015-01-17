@@ -9,9 +9,8 @@ import (
 func TestBasicAuthAuthenticate(t *testing.T) {
 	// Provide a minimal test implementation.
 	authOpts := AuthOptions{
-		Realm:    "Restricted",
-		User:     "test-user",
-		Password: "plain-text-password",
+		Realm:       "Restricted",
+		AuthFunc: func(u,p string) bool { return true },
 	}
 
 	b := &basicAuth{
@@ -35,8 +34,15 @@ func TestBasicAuthAuthenticate(t *testing.T) {
 		t.Fatal("Malformed Authorization header supplied.")
 	}
 
+	// Test wrong formated credentials
+	auth := base64.StdEncoding.EncodeToString([]byte("santaisnotreal"))
+	r.Header.Set("Authorization", "Basic "+auth)
+	if b.authenticate(r) != false {
+		t.Fatal("Failed on wrong credentials")
+	}
+
 	// Test correct credentials
-	auth := base64.StdEncoding.EncodeToString([]byte(b.opts.User + ":" + b.opts.Password))
+	auth = base64.StdEncoding.EncodeToString([]byte("for:bar"))
 	r.Header.Set("Authorization", "Basic "+auth)
 	if b.authenticate(r) != true {
 		t.Fatal("Failed on correct credentials")
