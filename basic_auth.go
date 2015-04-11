@@ -24,6 +24,13 @@ type AuthOptions struct {
 	User                string
 	Password            string
 	UnauthorizedHandler http.Handler
+	// UserFile refers to a location on disk with a list of username password pairs.
+	// Pairs are assumed to be separated by a colon ":" character (UTF-8 0x3A)
+	// When both a User, Password *and* a UserFile are specified, all are considered
+	// valid for authentication.
+	UserFile string
+	// userContents contains the user:password pairs read from UserFile on start-up.
+	userContents map[string]string
 }
 
 // Satisfies the http.Handler interface for basicAuth.
@@ -76,6 +83,13 @@ func (b *basicAuth) authenticate(r *http.Request) bool {
 	givenPass := sha256.Sum256(creds[1])
 	requiredUser := sha256.Sum256([]byte(b.opts.User))
 	requiredPass := sha256.Sum256([]byte(b.opts.Password))
+
+	// TODO(matt): Determine how to cache the UserFile - we do not want
+	// to read it on every request. We either read, cache & set boolean "true" on first
+	// request, or do so in init() and set a bool.
+	if b.opts.UserFile != "" {
+		// Nothing yet.
+	}
 
 	// Compare the supplied credentials to those set in our options
 	if subtle.ConstantTimeCompare(givenUser[:], requiredUser[:]) == 1 &&
