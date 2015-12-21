@@ -42,3 +42,11 @@ func TestBasicAuthAuthenticate(t *testing.T) {
 		t.Fatal("Failed on correct credentials")
 	}
 }
+
+func TestBasicAuthAutenticateWithouUserAndPass(t *testing.T) {
+	b := basicAuth{opts: AuthOptions{}}
+
+	if b.authenticate(nil) {
+		t.Fatal("Should not authenticate if user or pass are not set on opts")
+	}
+}
