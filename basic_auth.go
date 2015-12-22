@@ -48,6 +48,11 @@ func (b basicAuth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (b *basicAuth) authenticate(r *http.Request) bool {
 	const basicScheme string = "Basic "
 
+	// Prevent authentication with empty credentials if User and Password is not set
+	if b.opts.User == "" || b.opts.Password == "" {
+		return false
+	}
+
 	// Confirm the request is sending Basic Authentication credentials.
 	auth := r.Header.Get("Authorization")
 	if !strings.HasPrefix(auth, basicScheme) {
