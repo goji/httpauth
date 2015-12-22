@@ -1,15 +1,20 @@
 # goji/httpauth [![GoDoc](https://godoc.org/github.com/goji/httpauth?status.svg)](https://godoc.org/github.com/goji/httpauth) [![Build Status](https://travis-ci.org/goji/httpauth.svg)](https://travis-ci.org/goji/httpauth)
 
-httpauth currently provides [HTTP Basic Authentication middleware](http://tools.ietf.org/html/rfc2617) for Go. 
+httpauth currently provides [HTTP Basic Authentication middleware](http://tools.ietf.org/html/rfc2617) for Go. It is compatible with Go's own `net/http`, [goji](https://goji.io), Gin & anything that speaks the `http.Handler` interface.
 
-Note that httpauth is completely compatible with [Goji](https://goji.io/), a minimal web framework for Go, but as it satisfies http.Handler it can be used beyond Goji itself. 
 ## Example
 
 httpauth provides a `SimpleBasicAuth` function to get you up and running. Particularly ideal for development servers.
 
 Note that HTTP Basic Authentication credentials are sent over the wire "in the clear" (read: plaintext!) and therefore should not be considered a robust way to secure a HTTP server. If you're after that, you'll need to use SSL/TLS ("HTTPS") at a minimum.
 
-### Goji
+### Install It
+
+```sh
+$ go get github.com/goji/httpauth
+```
+
+### Goji v2
 
 ```go
 
@@ -18,18 +23,19 @@ package main
 import(
     "net/http"
 
-    "github.com/zenazn/goji/web"
-    "github.com/zenazn/goji/web/middleware"
+    "goji.io"
 )
 
 func main() {
+    mux := goji.NewMux()
 
-    goji.Use(httpauth.SimpleBasicAuth("dave", "somepassword"))
-    goji.Use(SomeOtherMiddleware)
-    // myHandler requires HTTP Basic Auth
-    goji.Get("/thing", myHandler)
+    mux.Use(httpauth.SimpleBasicAuth("dave", "somepassword"))
+    mux.Use(SomeOtherMiddleware)
 
-    goji.Serve()
+    // YourHandler now requires HTTP Basic Auth
+    mux.Handle(pat.Get("/some-route"), YourHandler))
+
+    log.Fatal(http.ListenAndServe("localhost:8000", mux))
 }
 ```
 
@@ -49,11 +55,14 @@ func main() {
         UnauthorizedHandler: myUnauthorizedHandler,
     }
 
-    goji.Use(BasicAuth(authOpts))
-    goji.Use(SomeOtherMiddleware)
-    goji.Get("/thing", myHandler)
+    mux := goji.NewMux()
 
-    goji.Serve()
+    mux.Use(BasicAuth(authOpts))
+    mux.Use(SomeOtherMiddleware)
+
+    mux.Handle(pat.Get("/some-route"), YourHandler))
+
+    log.Fatal(http.ListenAndServe("localhost:8000", mux))
 }
 ```
 
@@ -74,15 +83,14 @@ import (
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", myHandler)
+	r.HandleFunc("/", YourHandler)
 	http.Handle("/", httpauth.SimpleBasicAuth("dave", "somepassword")(r))
 
 	http.ListenAndServe(":7000", nil)
 }
 
-func myHandler(w http.ResponseWriter, r *http.Request) {
-
-	w.Write([]byte("hello"))
+func YourHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Gorilla!\n"))
 }
 ```
 
@@ -100,7 +108,7 @@ import(
 )
 
 func main() {
-	http.Handle("/", httpauth.SimpleBasicAuth("dave", "somepassword")(http.HandlerFunc(hello)))
+	http.Handle("/", httpauth.SimpleBasicAuth("dave", "somepassword")(http.HandlerFunc(YourHandler)))
 	http.ListenAndServe(":7000", nil)
 }
 ```
@@ -108,3 +116,7 @@ func main() {
 ## Contributing
 
 Send a pull request! Note that features on the (informal) roadmap include HTTP Digest Auth and the potential for supplying your own user/password comparison function.
+
+## License
+
+MIT Licensed. See the LICENSE file for details.
