@@ -113,6 +113,37 @@ func main() {
 }
 ```
 
+### Custom comparision function
+
+```go
+package main
+
+import(
+    "net/http"
+
+    "github.com/goji/httpauth"
+)
+
+func DummyBasicAuth() func(http.Handler) http.Handler {
+    opts := httpauth.AuthOptions{
+        Realm: "Restricted",
+        AuthFunc: func(u,p string) bool { return true },
+    }
+
+    return httpauth.BasicAuth(opts)
+}
+
+func hello(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+}
+
+func main() {
+
+    http.Handle("/", httpauth.DummyBasicAuth()(http.HandlerFunc(hello)))
+    http.ListenAndServe(":7000", nil)
+}
+```
+
 ## Contributing
 
 Send a pull request! Note that features on the (informal) roadmap include HTTP Digest Auth and the potential for supplying your own user/password comparison function.
