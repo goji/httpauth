@@ -10,9 +10,11 @@ func TestBasicAuthAuthenticateWithFunc(t *testing.T) {
 	requiredUser := "jqpublic"
 	requiredPass := "secret.sauce"
 
+	r := &http.Request{Method: "GET"}
+
 	// Dumb test function
-	fn := func(u, p string) bool {
-		return u == requiredUser && p == requiredPass
+	fn := func(u, p string, req *http.Request) bool {
+		return u == requiredUser && p == requiredPass && req == r
 	}
 
 	// Provide a minimal test implementation.
@@ -22,8 +24,6 @@ func TestBasicAuthAuthenticateWithFunc(t *testing.T) {
 	}
 
 	b := &basicAuth{opts: authOpts}
-
-	r := &http.Request{Method: "GET"}
 
 	if b.authenticate(nil) {
 		t.Fatal("Should not succeed when http.Request is nil")
