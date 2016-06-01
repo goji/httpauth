@@ -53,9 +53,9 @@ func (b *basicAuth) authenticate(r *http.Request) bool {
 		return false
 	}
 
-	// In simple mode, prevent authentication with empty credentials if User or
-	// Password is not set.
-	if b.opts.AuthFunc == nil && (b.opts.User == "" || b.opts.Password == "") {
+	// In simple mode, prevent authentication with empty credentials if User is
+	// not set. Allow empty passwords to support non-password use-cases.
+	if b.opts.AuthFunc == nil && b.opts.User == "" {
 		return false
 	}
 
