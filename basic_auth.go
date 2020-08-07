@@ -35,7 +35,7 @@ func (b basicAuth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check that the provided details match
-	if b.authenticate(r) == false {
+	if !b.authenticate(r) {
 		b.requestAuth(w, r)
 		return
 	}
@@ -94,7 +94,7 @@ func (b *basicAuth) authenticate(r *http.Request) bool {
 
 // simpleBasicAuthFunc authenticates the supplied username and password against
 // the User and Password set in the Options struct.
-func (b *basicAuth) simpleBasicAuthFunc(user, pass string, r *http.Request) bool {
+func (b *basicAuth) simpleBasicAuthFunc(user, pass string, _ *http.Request) bool {
 	// Equalize lengths of supplied and required credentials
 	// by hashing them
 	givenUser := sha256.Sum256([]byte(user))
@@ -103,12 +103,8 @@ func (b *basicAuth) simpleBasicAuthFunc(user, pass string, r *http.Request) bool
 	requiredPass := sha256.Sum256([]byte(b.opts.Password))
 
 	// Compare the supplied credentials to those set in our options
-	if subtle.ConstantTimeCompare(givenUser[:], requiredUser[:]) == 1 &&
-		subtle.ConstantTimeCompare(givenPass[:], requiredPass[:]) == 1 {
-		return true
-	}
-
-	return false
+	return subtle.ConstantTimeCompare(givenUser[:], requiredUser[:]) == 1 &&
+		subtle.ConstantTimeCompare(givenPass[:], requiredPass[:]) == 1
 }
 
 // Require authentication, and serve our error handler otherwise.
@@ -118,7 +114,7 @@ func (b *basicAuth) requestAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 // defaultUnauthorizedHandler provides a default HTTP 401 Unauthorized response.
-func defaultUnauthorizedHandler(w http.ResponseWriter, r *http.Request) {
+func defaultUnauthorizedHandler(w http.ResponseWriter, _ *http.Request) {
 	http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 }
 
