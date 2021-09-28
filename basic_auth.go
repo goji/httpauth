@@ -102,9 +102,14 @@ func (b *basicAuth) simpleBasicAuthFunc(user, pass string, r *http.Request) bool
 	requiredUser := sha256.Sum256([]byte(b.opts.User))
 	requiredPass := sha256.Sum256([]byte(b.opts.Password))
 
+	// Combine user and pass hashes together into single byte
+	// array to ensure constant time comparison no matter the
+	// combination of user or pass matching.
+	givenUserPass := append(givenUser[:], givenPass[:]...)
+	requiredUserPass := append(requiredUser[:], requiredPass[:]...)
+
 	// Compare the supplied credentials to those set in our options
-	if subtle.ConstantTimeCompare(givenUser[:], requiredUser[:]) == 1 &&
-		subtle.ConstantTimeCompare(givenPass[:], requiredPass[:]) == 1 {
+	if subtle.ConstantTimeCompare(givenUserPass[:], requiredUserPass[:]) == 1 {
 		return true
 	}
 
